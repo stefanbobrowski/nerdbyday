@@ -42,3 +42,6 @@ Dockerfile
 # Misc
 coverage/
 *.tsbuildinfo
+
+frontend.zip
+backend.zip

@@ -5,18 +5,25 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const triggerHealthCheck = async () => {
-    const res = await fetch('http://localhost:3000/health');
+    const res = await fetch('/api/health');
     const data = await res.json();
     console.log(data);
   };
 
   const handleCheckout = async () => {
-    setLoading(true);
-    const res = await fetch('http://localhost:3000/create-checkout-session', {
-      method: 'POST',
-    });
-    const data = await res.json();
-    window.location.href = data.url;
+    try {
+      setLoading(true);
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (!data.url) throw new Error('Invalid session');
+      window.location.href = data.url;
+    } catch (err) {
+      console.error('Checkout failed:', err);
+      alert('Something went wrong. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (

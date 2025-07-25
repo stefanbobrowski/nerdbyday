@@ -1,35 +1,43 @@
-// import { Router } from 'express';
-// import Stripe from 'stripe';
+import { Router } from 'express';
+import Stripe from 'stripe';
 
-// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-//   apiVersion: '2025-06-30.basil',
-// });
+export const createCheckoutRouter = (stripe: Stripe): Router => {
+  const router = Router();
 
-// export const createCheckoutRouter = Router();
+  router.get('/checkout-session', async (req, res) => {
+    const sessionId = req.query.session_id as string;
+    try {
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+      res.json(session);
+    } catch (err) {
+      console.error('Error retrieving checkout session:', err);
+      res.status(500).json({ error: 'Unable to retrieve session' });
+    }
+  });
 
-// createCheckoutRouter.post('/create-checkout-session', async (req, res) => {
-//   try {
-//     const session = await stripe.checkout.sessions.create({
-//       line_items: [
-//         {
-//           price_data: {
-//             currency: 'usd',
-//             product_data: {
-//               name: 'Nerd by Day T-Shirt',
-//             },
-//             unit_amount: 2500,
-//           },
-//           quantity: 1,
-//         },
-//       ],
-//       mode: 'payment',
-//       success_url: `${process.env.CLIENT_URL}/success`,
-//       cancel_url: `${process.env.CLIENT_URL}/cancel`,
-//     });
+  router.post('/create-checkout-session', async (req, res) => {
+    try {
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price: 'price_1Ro4FYRVMHldKKBAtS6H06wU',
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.CLIENT_URL}/cancel`,
+        shipping_address_collection: {
+          allowed_countries: ['US', 'CA' /* etc */],
+        },
+      });
+      res.json({ url: session.url });
+    } catch (err) {
+      console.error('Stripe Error:', err);
+      res.status(500).json({ error: 'Stripe error' });
+    }
+  });
 
-//     res.json({ url: session.url });
-//   } catch (err) {
-//     console.error('Stripe Error:', err);
-//     res.status(500).json({ error: 'Stripe error' });
-//   }
-// });
+  return router;
+};
