@@ -6,7 +6,10 @@ type SessionData = {
   amount_total: number;
   currency: string;
   payment_status: string;
-  customer_details?: {
+  metadata?: {
+    size?: string;
+  };
+  customer_details?: { 
     name?: string;
     email?: string;
     address?: {
@@ -35,16 +38,18 @@ export default function Success() {
 
   if (!session) return <p>Loading your receipt…</p>;
 
-  const { id, created, amount_total, currency, payment_status, customer_details } = session;
+  const { id, created, amount_total, currency, payment_status, metadata, customer_details } =
+    session;
 
   // dates
   const orderDate = new Date(created * 1000).toLocaleDateString();
   const shipBy = new Date((created + 2 * 24 * 3600) * 1000).toLocaleDateString();
   const arriveBy = new Date((created + 7 * 24 * 3600) * 1000).toLocaleDateString();
 
-  // grab name + address
+  // grab name + address + size
   const name = customer_details?.name;
   const addr = customer_details?.address;
+  const size = metadata?.size;
 
   return (
     <div
@@ -69,6 +74,11 @@ export default function Success() {
         <p>
           <strong>Payment Status:</strong> {payment_status}
         </p>
+        {size && (
+          <p>
+            <strong>Size:</strong> {size}
+          </p>
+        )}
       </section>
 
       {addr && (
@@ -99,20 +109,35 @@ export default function Success() {
         </p>
       </section>
 
-      <button
-        onClick={() => window.print()}
-        style={{
-          marginTop: 30,
-          padding: '10px 20px',
-          backgroundColor: '#6772e5',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 4,
-          cursor: 'pointer',
-        }}
-      >
-        Print Receipt
-      </button>
+      <div style={{ marginTop: 30 }}>
+        <button
+          onClick={() => window.print()}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#6772e5',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+            marginRight: 10,
+          }}
+        >
+          Print Receipt
+        </button>
+        <button
+          onClick={() => (window.location.href = '/')}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#28a745',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+          }}
+        >
+          Go Home
+        </button>
+      </div>
     </div>
   );
 }

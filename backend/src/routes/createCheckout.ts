@@ -16,21 +16,29 @@ export const createCheckoutRouter = (stripe: Stripe): Router => {
   });
 
   router.post('/create-checkout-session', async (req, res) => {
+    const { size } = req.body; // e.g. 'M'
+
     try {
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [
           {
-            price: 'price_1Ro4FYRVMHldKKBAtS6H06wU',
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `Nerd by Day T‑Shirt (Size: ${size})`,
+                metadata: { size },
+              },
+              unit_amount: 2500,
+            },
             quantity: 1,
           },
         ],
         mode: 'payment',
+        metadata: { size },
+        shipping_address_collection: { allowed_countries: ['US', 'CA'] },
         success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.CLIENT_URL}/cancel`,
-        shipping_address_collection: {
-          allowed_countries: ['US', 'CA' /* etc */],
-        },
       });
       res.json({ url: session.url });
     } catch (err) {
